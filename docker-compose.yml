@@ -1,0 +1,53 @@
+version: '3'
+services:
+  toscdb:
+    image: mongo
+    restart: unless-stopped
+    container_name: tosc-db
+    env_file: .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - ./db:/data/db
+    networks:
+      - tosc
+  cms:
+    image: tosc-portal-cms:1.0.0
+    restart: unless-stopped
+    container_name: tosc-portal-cms
+    env_file: .env
+    environment:
+        DATABASE_CLIENT: ${DATABASE_CLIENT}
+        DATABASE_NAME: ${DATABASE_NAME}
+        DATABASE_HOST: ${DATABASE_HOST}
+        DATABASE_PORT: ${DATABASE_PORT}
+        DATABASE_USERNAME: ${DATABASE_USERNAME}
+        DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+    depends_on:
+        - toscdb
+    ports:
+      - '1337:1337'
+    networks:
+      - tosc
+    volumes:
+      - ./strapi-app:/usr/src/api/strapi-app
+  tosc-portal:
+    image: tosc-portal:1.0.0
+    restart: unless-stopped
+    container_name: tosc-portal
+    env_file: .env
+    depends_on:
+        - cms
+    ports:
+      - '8000:80'
+    environment:
+      STARPI_URL: ${STARPI_URL}
+    networks:
+        - tosc
+networks:
+    tosc:
+        driver: bridge
+
+volumes:
+    toscdb:
