@@ -1,3 +1,7 @@
 .env
-db/.DS_Store
 .DS_Store
+strapi-app/*
+db/*
+keycloak-data/*
+app/*
+mysql-data/*
