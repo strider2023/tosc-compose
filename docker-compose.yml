@@ -70,7 +70,7 @@ services:
     volumes:
       - ./strapi-app:/usr/src/api/strapi-app
   tosc-portal:
-    image: strider2023/tosc-portal:0.1.0
+    image: strider2023/tosc-portal:0.1.1
     restart: unless-stopped
     container_name: tosc-portal
     env_file: .env
