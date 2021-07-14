@@ -50,7 +50,7 @@ services:
     networks:
       - tosc
   cms:
-    image: strider2023/tosc-portal-cms:0.1.0
+    image: strider2023/tosc-portal-cms:0.1.1
     restart: unless-stopped
     container_name: tosc-portal-cms
     env_file: .env
@@ -69,23 +69,53 @@ services:
       - tosc
     volumes:
       - ./strapi-app:/usr/src/api/strapi-app
+  server:
+    image: strider2023/tosc-app-server:0.1.0
+    restart: unless-stopped
+    container_name: tosc-app-server
+    env_file: .env
+    environment:
+        APPLICATION_PORT: ${APPLICATION_PORT}
+        KEYCLOAK_ENDPOINT: ${KEYCLOAK_ENDPOINT}
+        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+        KEYCLOAK_GRANT_TYPE: ${KEYCLOAK_GRANT_TYPE}
+        KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+        KEYCLOAK_SCOPE: ${KEYCLOAK_SCOPE}
+        STRAPI_AUTH_URL: ${STRAPI_AUTH_URL}
+    depends_on:
+        - cms
+    ports:
+      - '4000:4000'
+    networks:
+      - tosc
   tosc-portal:
-    image: strider2023/tosc-portal:0.1.1
+    image: strider2023/tosc-portal:0.1.2
     restart: unless-stopped
     container_name: tosc-portal
     env_file: .env
     depends_on:
-        - cms
+        - server
     ports:
       - '8000:80'
     environment:
       STARPI_URL: ${STARPI_URL}
       ENABLE_GATSBY_REFRESH_ENDPOINT: ${ENABLE_GATSBY_REFRESH_ENDPOINT}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
-      KEYCLOAK_URL: ${KEYCLOAK_URL}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
     networks:
         - tosc
+  tosc-web-app:
+    image: strider2023/tosc-web-app:0.1.0
+    restart: unless-stopped
+    container_name: tosc-web-app
+    env_file: .env
+    depends_on:
+      - server
+    ports:
+      - '3000:80'
+    environment:
+      TOSC_APP_SERVER_GRAPHQL: ${TOSC_APP_SERVER_GRAPHQL}
+      TOSC_CMS_URL: ${TOSC_CMS_URL}
+    networks:
+      - tosc
 networks:
     tosc:
         driver: bridge
